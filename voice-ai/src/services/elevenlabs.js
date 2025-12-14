@@ -6,7 +6,8 @@ const ELEVENLABS_API_KEY = process.env.REACT_APP_ELEVEN_API_KEY;
 export async function speechToText(audioBlob) {
     try {
         const formData = new FormData();
-        formData.append("file", audioBlob, "audio.wav");
+        formData.append("file", audioBlob, "audio.mp4");
+        formData.append("model_id", "scribe_v1");
 
         const resp = await axios.post(
             "https://api.elevenlabs.io/v1/speech-to-text",
@@ -27,7 +28,7 @@ export async function speechToText(audioBlob) {
 }
 
 // Converting text to speech with additional options
-export async function textToSpeech(text, voiceID = "Adam", options = {}) {
+export async function textToSpeech(text, voiceID = "pNInz6obpgDQGcFmaJgB", options = {}) {
     try {
         const requestBody = {
             text,
@@ -45,7 +46,7 @@ export async function textToSpeech(text, voiceID = "Adam", options = {}) {
                 headers: {
                     "xi-api-key": ELEVENLABS_API_KEY,
                     "Content-Type": "application/json",
-                    "Accept": "audio/mpeg",
+                    "Accept": "audio/mp4",
                 },
                 responseType: "blob"
             }
