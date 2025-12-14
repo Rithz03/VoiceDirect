@@ -133,46 +133,79 @@ function App() {
   }
 
   return (
-    <div style={{ padding: 40 }}>
-      <h2>AI Voice Test</h2>
+    <div className="app-container">
+      <header className="header">
+        <h1>VoiceDirect AI</h1>
+      </header>
 
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: 20 }}>
-        <select value={mode} onChange={(e) => setMode(e.target.value)}>
+      <div className="controls-top">
+        <select
+          value={mode}
+          onChange={(e) => setMode(e.target.value)}
+          className="select-mode"
+        >
           {Object.entries(personalities).map(([key, p]) => (
             <option key={key} value={key}>{p.label}</option>
           ))}
         </select>
 
-        <button onClick={() => {
-          setChatHistory([]);
-          setReply("");
-          setAudioURL("");
-        }}>
-          Reset Conversation
-        </button>
-
         <button
-          onMouseDown={startRecording}
-          onMouseUp={handleProcess}
-          onMouseLeave={stopRecording} /* Safety: stop if they drag out */
-        >Hold to Speak</button>
-
-        {isRecording && <span style={{ color: 'red', fontWeight: 'bold', animation: 'pulse 1s infinite' }}>● Recording...</span>}
+          className="btn-secondary"
+          onClick={() => {
+            setChatHistory([]);
+            setReply("");
+            setAudioURL("");
+            setState("idle");
+          }}
+        >
+          Reset
+        </button>
       </div>
 
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      <main className="main-content">
+        <div className="orb-container">
+          <div className={`orb ${state} ${isRecording ? 'listening' : ''}`}></div>
+        </div>
 
-      <p>{reply}</p>
+        <div className="status-label">
+          {isRecording ? "Listening..." :
+            state === "thinking" ? "Thinking..." :
+              state === "speaking" ? "Speaking..." : "Tap & Hold to Speak"}
+        </div>
 
-      {audioURL && <audio ref={audioRef} controls autoPlay src={audioURL} onEnded={() => setState("idle")} />}
-      <p>
-        {state === "listening" && "Listening..."}
-        {state === "thinking" && "Thinking..."}
-        {state === "speaking" && "Speaking..."}
-      </p>
-      <p>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </p>
+        {error && <div className="error-msg">{error}</div>}
+
+        <div className="response-area">
+          {reply && (
+            <div className="ai-messages">
+              {reply}
+            </div>
+          )}
+        </div>
+
+        {/* Hidden Audio Player */}
+        {audioURL && (
+          <audio
+            ref={audioRef}
+            src={audioURL}
+            autoPlay
+            onEnded={() => setState("idle")}
+            style={{ display: 'none' }}
+          />
+        )}
+      </main>
+
+      <footer className="controls-bottom">
+        <button
+          className={`mic-button ${isRecording ? 'recording' : ''}`}
+          onMouseDown={startRecording}
+          onMouseUp={handleProcess}
+          onMouseLeave={stopRecording}
+          aria-label="Hold to speak"
+        >
+          {isRecording ? "REC" : "TALK"}
+        </button>
+      </footer>
     </div>
   );
 }
