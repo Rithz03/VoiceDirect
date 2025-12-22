@@ -189,7 +189,7 @@ function App() {
           )}
         </div>
 
-        // Hidden Audio Player
+        { /* Hidden Audio Player */ }
         {audioURL && (
           <audio
             ref={audioRef}
