@@ -46,7 +46,7 @@ export async function textToSpeech(text, voiceID = "pNInz6obpgDQGcFmaJgB", optio
                 headers: {
                     "xi-api-key": ELEVENLABS_API_KEY,
                     "Content-Type": "application/json",
-                    "Accept": "audio/mp4",
+                    "Accept": "audio/mpeg",
                 },
                 responseType: "blob"
             }

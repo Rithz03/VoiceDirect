@@ -15,26 +15,33 @@ function App() {
   const [chatHistory, setChatHistory] = useState([]);
   const [state, setState] = useState("idle");
   const audioRef = useRef(null);
+  const activeAudioUrlRef = useRef(null);
 
   useEffect(() => {
-    return () => {
-      if (audioURL) {
-        URL.revokeObjectURL(audioURL);
-      }
-    };
+    // Revoke the *previous* URL if it exists and is different
+    if (activeAudioUrlRef.current && activeAudioUrlRef.current !== audioURL) {
+      URL.revokeObjectURL(activeAudioUrlRef.current);
+    }
+    activeAudioUrlRef.current = audioURL;
   }, [audioURL]);
 
   async function startRecording() {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+    if (state !== "idle" && state !== "speaking")
+      return;
+
+    if (state === "speaking") {
+      // Pause playback if interrupting
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
       setAudioURL("");
+      // No return here, allow recording to start immediately
     }
 
-    if (state === "speaking")
-      return;
     if (isRecording)
       return;
+
     setState("listening");
     setError(null);
     setIsRecording(true);
@@ -47,7 +54,7 @@ function App() {
       };
 
       mediaRecorderRef.current.start();
-      console.log("Recording started.");
+
     } catch (err) {
       console.error("Error accessing microphone:", err);
       setError("Could not access microphone.");
@@ -71,7 +78,7 @@ function App() {
       };
 
       mediaRecorderRef.current.stop();
-      console.log("Recording stopped.");
+
     });
   }
 
@@ -93,7 +100,7 @@ function App() {
 
       // STT
       const userText = await speechToText(audioBlob);
-      console.log("User Text:", userText);
+
 
       setState("thinking");
       // Gemini
@@ -168,17 +175,17 @@ function App() {
         </div>
 
         <div className="status-label">
-          {isRecording ? "Listening..." :
-            state === "thinking" ? "Thinking..." :
-              state === "speaking" ? "Speaking..." : "Tap & Hold to Speak"}
+          {!isRecording && state === "idle" && !reply && "Tap & Hold to Speak"}
         </div>
-
+        
         {error && <div className="error-msg">{error}</div>}
 
         <div className="response-area">
-          {reply && (
+          {(isRecording || state === "thinking" || reply) && (
             <div className="ai-messages">
-              {reply}
+              {isRecording ? "Listening..." :
+                state === "thinking" ? "Thinking..." :
+                  reply}
             </div>
           )}
         </div>
@@ -200,7 +207,7 @@ function App() {
           className={`mic-button ${isRecording ? 'recording' : ''}`}
           onMouseDown={startRecording}
           onMouseUp={handleProcess}
-          onMouseLeave={stopRecording}
+
           aria-label="Hold to speak"
         >
           {isRecording ? "REC" : "TALK"}
